@@ -1,0 +1,4 @@
+- include: apt_setting.yml
+- include: goweb.yml
+- include: nginx.yml
+

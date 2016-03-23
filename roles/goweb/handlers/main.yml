@@ -1,0 +1,17 @@
+- name: systemctl daemon-reload
+  shell: systemctl daemon-reload
+
+- name: restart circus
+  service: name=circus state=restarted
+
+- name: reload circus
+  service: name=circus state=reloaded
+
+- name: reload goweb
+  shell: circusctl reload goweb
+
+- name: restart nginx
+  service: name=nginx state=restarted
+
+- name: reload nginx
+  service: name=nginx state=reloaded

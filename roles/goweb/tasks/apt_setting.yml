@@ -1,0 +1,4 @@
+- name: apt | replace sources.list to jp mirror
+  tags:
+    - apt
+  copy: src=sources.list dest=/etc/apt/sources.list mode=644 owner=root group=root

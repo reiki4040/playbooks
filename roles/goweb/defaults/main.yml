@@ -1,0 +1,8 @@
+goweb_version: v0.1.0
+backend_unix_domain_socket: true
+unix_domain_socket_path: /var/run/goweb.sock
+goweb_port: 8000
+
+nginx_build_version: 0.7.2
+nginx_version: 1.9.12
+server_name: localhost

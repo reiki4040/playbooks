@@ -1,0 +1,69 @@
+- name: nginx | create nginx group
+  tags:
+    - nginx
+  group: name=nginx
+
+- name: nginx | create nginx user
+  tags:
+    - nginx
+  user: name=nginx comment="nginx user" group=nginx shell=/bin/false
+
+- name: create nginx directories
+  tags:
+    - nginx
+  file: dest={{ item }} state=directory mode=755 owner=nginx group=nginx
+  with_items:
+    - /var/log/nginx
+
+- name: nginx | download nginx-build
+  tags:
+    - nginx
+  get_url: url="https://github.com/cubicdaiya/nginx-build/releases/download/v{{ nginx_build_version }}/nginx-build-linux-amd64-{{ nginx_build_version }}.tar.gz" dest=/tmp
+
+- name: nginx | unarchive nginx-build
+  tags:
+    - nginx
+  unarchive: copy=no src=/tmp/nginx-build-linux-amd64-{{ nginx_build_version }}.tar.gz dest=/tmp
+
+- name: nginx | do nginx-build
+  tags:
+    - nginx
+  shell: ./nginx-build -d work \
+          -v {{ nginx_version }} \
+          -zlib \
+          -openssl \
+          -pcre \
+          -user nginx \
+          -group nginx \
+          -conf-path /etc/nginx/nginx.conf \
+          -pid-path /var/run/nginx.pid
+  args:
+    chdir: /tmp
+    creates: /usr/local/nginx/sbin/nginx
+
+- name: nginx | make install nginx
+  tags:
+    - nginx
+  shell: make install
+  args:
+    chdir: /tmp/work/nginx/{{ nginx_version }}/nginx-{{ nginx_version }}/
+    creates: /usr/local/nginx/sbin/nginx
+
+- name: nginx | put nginx.conf
+  tags:
+    - nginx
+    - update-nginx-conf
+  template: src=nginx.conf.j2 dest=/etc/nginx/nginx.conf owner=root group=root mode=644
+  notify:
+    - reload nginx
+
+- name: nginx | nginx template unit file for systemd
+  tags:
+    - nginx
+    - update-nginx-systemd-unit
+  template: src=nginx.service.j2 dest=/etc/systemd/system/nginx.service
+
+- name: nginx | start nginx service
+  tags:
+    - nginx
+  service: name=nginx state=started

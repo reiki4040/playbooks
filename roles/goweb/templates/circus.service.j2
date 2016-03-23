@@ -1,0 +1,14 @@
+[Unit]
+Description=circusd for goweb
+After=syslog.target network.target nss-lookup.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/circusd /etc/circus/circus.ini
+ExecReload=/usr/local/bin/circusctl reload
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+

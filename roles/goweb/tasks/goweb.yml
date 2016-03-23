@@ -1,0 +1,71 @@
+- name: create directories
+  tags:
+    - goweb
+  file: dest={{ item }} state=directory mode=755 owner=root group=root
+  with_items:
+    - /opt/goweb
+    - /var/log/goweb
+
+- name: goweb | download goweb binary from release
+  tags:
+    - goweb
+    - update-goweb-bin
+  get_url: url="https://github.com/reiki4040/goweb/releases/download/{{ goweb_version }}/goweb-{{ goweb_version }}_linux_amd64.tar.gz" dest=/tmp
+
+- name: goweb | download goweb binary from release
+  tags:
+    - goweb
+    - update-goweb-bin
+  unarchive: copy=no src=/tmp/goweb-{{ goweb_version }}_linux_amd64.tar.gz dest=/opt/goweb mode=744 owner=root group=root
+
+- name: goweb | change binary symlink
+  tags:
+    - goweb
+    - update-goweb-bin
+  file: src=/opt/goweb/goweb-{{ goweb_version }}_linux_amd64 dest=/opt/goweb/goweb state=link
+  notify:
+    - reload goweb
+
+- name: circus | create directories
+  tags:
+    - goweb
+  file: dest={{ item }} state=directory mode=755 owner=root group=root
+  with_items:
+    - /etc/circus
+
+- name: circus | install pip for circus install
+  tags:
+    - goweb
+  apt: pkg={{ item }} update_cache=yes #force=yes
+  with_items:
+    - python-dev
+    - python-pip
+    - libzmq-dev
+
+- name: circus | install circus by pip
+  tags:
+    - goweb
+  pip: name=circus
+
+- name: circus | template circus file
+  tags:
+    - goweb
+    - update-circus-ini
+  template: src=circus.ini.j2 dest=/etc/circus/circus.ini
+  notify:
+    - reload circus
+
+- name: circus | circus template unit file for systemd
+  tags:
+    - goweb
+    - update-circus-systemd-unit
+  template: src=circus.service.j2 dest=/etc/systemd/system/circus.service
+  notify:
+    - systemctl daemon-reload
+
+- name: circus | start circus service
+  tags:
+    - goweb
+  service: name=circus state=started
+
+

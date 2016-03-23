@@ -1,0 +1,29 @@
+[circus]
+statsd = 1
+
+[watcher:goweb]
+cmd = /opt/goweb/goweb -fd $(circus.sockets.web)
+stop_signal = SIGINT
+numprocesses = 1
+use_sockets = True
+
+stdout_stream.class = FileStream
+stdout_stream.filename = /var/log/goweb/stdout.log
+stdout_stream.refresh_time = 0.3
+stdout_stream.max_bytes = 10240000
+stdout_stream.backup_count = 2
+
+stderr_stream.class = FileStream
+stderr_stream.filename = /var/log/goweb/stderr.log
+stderr_stream.refresh_time = 0.3
+stderr_stream.max_bytes = 10240000
+stderr_stream.backup_count = 2
+
+[socket:web]
+{% if backend_unix_domain_socket %}
+path = {{ unix_domain_socket_path }}
+family = AF_UNIX
+{% else %}
+host = 0.0.0.0
+port = {{ goweb_port }}
+{% endif %}

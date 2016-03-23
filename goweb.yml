@@ -1,0 +1,6 @@
+- hosts: jessie
+  user: vagrant
+  become: yes
+  become_user: root
+  roles:
+    - goweb
