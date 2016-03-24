@@ -13,21 +13,21 @@ http {
 
     keepalive_timeout 30;
 
-	upstream goweb_upst {
+    upstream goweb_upst {
 {% if backend_unix_domain_socket %}
-		server unix:{{ unix_domain_socket_path }};
+        server unix:{{ unix_domain_socket_path }};
 {% else %}
-		server 127.0.0.1:{{ goweb_port }};
+        server 127.0.0.1:{{ goweb_port }};
 {% endif %}
-	}
+    }
 
     server {
         listen       80;
         server_name  {{ server_name }};
 
-		location ~^/api/.*$ {
-			proxy_pass http://goweb_upst;
-			proxy_set_header X-Forwarded-Host $host;
-		}
+        location ~^/api/.*$ {
+            proxy_pass http://goweb_upst;
+            proxy_set_header X-Forwarded-Host $host;
+        }
     }
 }
